@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tier_history', function (Blueprint $table) {
+        Schema::create('tier_histories', function (Blueprint $table) {
             $table->id();
             $table->foreignId('member_id')->constrained('members')->cascadeOnDelete();
             $table->string('from_tier', 20);
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tier_history');
+        Schema::dropIfExists('tier_histories');
     }
 };

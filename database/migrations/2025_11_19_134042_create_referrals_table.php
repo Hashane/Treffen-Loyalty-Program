@@ -19,7 +19,8 @@ return new class extends Migration
             $table->string('referred_email', 255)->nullable();
             $table->string('referred_phone', 20)->nullable();
             $table->integer('bonus_points_awarded')->default(20);
-            $table->foreignId('points_ledger_id')->nullable()->constrained('points_ledger')->nullOnDelete();
+
+            $table->foreignId('points_ledger_id')->nullable()->constrained('points_ledgers')->nullOnDelete();
             $table->string('status')->default('PENDING');
             $table->timestamp('invited_at')->useCurrent();
             $table->timestamp('completed_at')->nullable();

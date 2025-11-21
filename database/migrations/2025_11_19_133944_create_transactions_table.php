@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('member_id')->constrained('members')->cascadeOnDelete();
+            $table->foreignId('outlet_id')->nullable()->constrained('outlets')->nullOnDelete();
             $table->string('check_number', 100);
             $table->string('guest_name', 200)->nullable();
             $table->string('department', 50)->nullable();

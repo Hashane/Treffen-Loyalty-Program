@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('tier_name', 20);
             $table->integer('tier_level');
             $table->integer('points_threshold');
-            $table->decimal('points_multiplier', 3, 2);
+            $table->decimal('points_multiplier', 4, 2);
             $table->json('benefits')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
