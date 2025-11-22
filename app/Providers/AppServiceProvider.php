@@ -32,7 +32,7 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
-        Response::macro('success', function ($data = null, $message = 'Success', $code = 200) {
+        Response::macro('success', function ($data = null, $message = 'Success', int $code = 200) {
             return response()->json([
                 'success' => true,
                 'message' => $message,

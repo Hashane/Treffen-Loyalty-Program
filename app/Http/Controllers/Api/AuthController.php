@@ -29,10 +29,10 @@ class AuthController extends Controller
 
         $token = $member->createToken('auth-token')->plainTextToken;
 
-        return response()->json([
+        return response()->success([
             'member' => new MemberResource($member),
             'access_token' => $token,
-        ], 201);
+        ], 'Registered Successfully', 201);
     }
 
     public function login(LoginRequest $request)
@@ -46,21 +46,23 @@ class AuthController extends Controller
         $member = Auth::guard('member')->user();
         $token = $member->createToken('auth-token')->plainTextToken;
 
-        return response()->json([
-            'member' => new MemberResource($member),
-            'access_token' => $token,
-        ]);
+        return response()->success(
+            [
+                'member' => new MemberResource($member),
+                'access_token' => $token,
+            ], 'Successfully logged in'
+        );
     }
 
     public function me(Request $request)
     {
-        return response()->json(new MemberResource($request->user()->load('membershipTier', 'oauthConnections')));
+        return response()->success(new MemberResource($request->user()->load('membershipTier', 'oauthConnections')));
 
     }
 
     public function oauthConnections(Request $request)
     {
-        return response()->json([
+        return response()->success([
             'connections' => $request->user()->oauthConnections()->get(['id', 'provider', 'avatar', 'created_at']),
         ]);
     }
@@ -98,25 +100,25 @@ class AuthController extends Controller
 
     public function redirectToGoogle(GoogleOAuthService $service)
     {
-        return response()->json(['url' => $service->getRedirectUrl()]);
+        return response()->success(['url' => $service->getRedirectUrl()]);
     }
 
     public function handleGoogleCallback(GoogleOAuthService $service)
     {
         $result = $service->handleCallback();
 
-        return response()->json($result);
+        return response()->success($result);
     }
 
     public function redirectToFacebook(FacebookOAuthService $service)
     {
-        return response()->json(['url' => $service->getRedirectUrl()]);
+        return response()->success(['url' => $service->getRedirectUrl()]);
     }
 
     public function handleFacebookCallback(FacebookOAuthService $service)
     {
         $result = $service->handleCallback();
 
-        return response()->json($result);
+        return response()->success($result);
     }
 }
