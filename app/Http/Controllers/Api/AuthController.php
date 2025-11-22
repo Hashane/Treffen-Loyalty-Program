@@ -11,6 +11,7 @@ use App\Models\OauthConnection;
 use App\Services\FacebookOAuthService;
 use App\Services\GoogleOAuthService;
 use Hash;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -27,6 +28,8 @@ class AuthController extends Controller
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
         ]);
+
+        event(new Registered($member));
 
         $token = $member->createToken('auth-token')->plainTextToken;
 

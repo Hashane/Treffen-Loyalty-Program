@@ -6,7 +6,7 @@ use App\Enums\Members\IdType;
 use App\Enums\Members\PreferredCommunication;
 use App\Enums\Members\Status;
 use App\Observers\MemberObserver;
-use Illuminate\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,9 +16,9 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 #[ObservedBy([MemberObserver::class])]
-class Member extends Authenticatable
+class Member extends Authenticatable implements MustVerifyEmail
 {
-    use HasApiTokens, HasFactory, MustVerifyEmail, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
         'member_number',
