@@ -4,11 +4,10 @@ namespace App\Models;
 
 use App\Enums\PointsLedger\PointsType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class PointsLedger extends Model
+class PointsLedger extends BaseModel
 {
     use HasFactory;
 
