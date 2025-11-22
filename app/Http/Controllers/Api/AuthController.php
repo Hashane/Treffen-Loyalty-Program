@@ -17,6 +17,7 @@ use App\Models\OauthConnection;
 use App\Models\VerificationCode;
 use App\Services\FacebookOAuthService;
 use App\Services\GoogleOAuthService;
+use App\VerifiesCode;
 use Hash;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
@@ -27,6 +28,8 @@ use Mail;
 
 class AuthController extends Controller
 {
+    use VerifiesCode;
+
     public function __construct(protected CreateMemberAction $createMember) {}
 
     public function register(RegisterRequest $request)
@@ -159,23 +162,7 @@ class AuthController extends Controller
 
     public function resetPassword(ResetPasswordRequest $request)
     {
-        $verificationCode = VerificationCode::where('identifier', $request->email)
-            ->where('type', VerificationCodeType::PasswordReset)
-            ->first();
-
-        if (! $verificationCode) {
-            return response()->error('Invalid or expired verification code.', 400);
-        }
-
-        if (! $verificationCode->isValid()) {
-            return response()->error('Verification code has expired or exceeded maximum attempts.', 400);
-        }
-
-        if (! $verificationCode->verifyCode($request->code)) {
-            $verificationCode->incrementAttempts();
-
-            return response()->error('Invalid verification code.', 400);
-        }
+        $verificationCode = $this->findAndVerifyCode($request->email, $request->code, VerificationCodeType::PasswordReset);
 
         $member = Member::where('email', $request->email)->first();
 

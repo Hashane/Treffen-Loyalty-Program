@@ -21,11 +21,13 @@ Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttl
 Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('guest')->name('password.email');
 Route::post('auth/reset-password', [AuthController::class, 'resetPassword'])->middleware('guest')->middleware('guest')->name('password.reset');
 
-Route::get('/email/verify/{id}/{hash}', [MemberController::class, 'verifyEmail'])->middleware(['signed'])
-    ->name('verification.verify');
-
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::get('/oauth/connections', [AuthController::class, 'oauthConnections']);
     Route::delete('/oauth/connections/{oauth_connection}', [AuthController::class, 'unlinkOAuthProvider']);
+
+    Route::post('/email/send-verification-code', [MemberController::class, 'sendVerificationCode'])
+        ->middleware('throttle:5,1');
+    Route::post('/email/verify', [MemberController::class, 'verifyEmail'])
+        ->middleware('throttle:5,1');
 });

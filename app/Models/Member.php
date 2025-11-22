@@ -31,9 +31,7 @@ class Member extends Authenticatable implements MustVerifyEmail
         'phone',
         'preferred_communication',
         'password',
-        'email_verified',
         'email_verified_at',
-        'email_verification_token',
         'remember_token',
         'failed_login_attempts',
         'locked_until',
@@ -50,7 +48,6 @@ class Member extends Authenticatable implements MustVerifyEmail
 
     protected $hidden = [
         'password',
-        'email_verification_token',
         'remember_token',
     ];
 
@@ -61,7 +58,6 @@ class Member extends Authenticatable implements MustVerifyEmail
             'preferred_communication' => PreferredCommunication::class,
             'status' => Status::class,
             'date_of_birth' => 'date',
-            'email_verified' => 'boolean',
             'email_verified_at' => 'datetime',
             'locked_until' => 'datetime',
             'enrolled_date' => 'datetime',
