@@ -18,6 +18,9 @@ Route::get('/auth/facebook/callback', [AuthController::class, 'handleFacebookCal
 Route::post('auth/register', [AuthController::class, 'register']);
 Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:login')->name('login');
 
+Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('guest')->name('password.email');
+Route::post('auth/reset-password', [AuthController::class, 'resetPassword'])->middleware('guest')->middleware('guest')->name('password.reset');
+
 Route::get('/email/verify/{id}/{hash}', [MemberController::class, 'verifyEmail'])->middleware(['signed'])
     ->name('verification.verify');
 
