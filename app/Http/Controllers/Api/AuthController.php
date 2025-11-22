@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Actions\CreateMemberAction;
+use App\Events\MemberRegistered;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
@@ -30,6 +31,7 @@ class AuthController extends Controller
         ]);
 
         event(new Registered($member));
+        event(new MemberRegistered($member));
 
         $token = $member->createToken('auth-token')->plainTextToken;
 
