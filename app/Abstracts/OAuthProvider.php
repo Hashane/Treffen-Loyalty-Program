@@ -1,0 +1,94 @@
+<?php
+
+namespace App\Abstracts;
+
+use App\Actions\CreateMemberAction;
+use App\Helpers\Helper;
+use App\Http\Resources\Api\V1\MemberResource;
+use App\Models\Member;
+use App\Models\OauthConnection;
+use Illuminate\Support\Facades\DB;
+use Laravel\Socialite\Contracts\User as SocialiteUser;
+use Laravel\Socialite\Facades\Socialite;
+
+abstract class OAuthProvider
+{
+    protected string $provider;
+
+    public function __construct(protected CreateMemberAction $createMember) {}
+
+    public function getRedirectUrl(): string
+    {
+        return Socialite::driver($this->provider)
+            ->stateless()
+            ->redirect()
+            ->getTargetUrl();
+    }
+
+    public function handleCallback(): array
+    {
+        try {
+            $oauthUser = Socialite::driver($this->provider)
+                ->stateless()
+                ->user();
+
+            if (! $oauthUser->getEmail()) {
+                throw new \Exception('Email not provided by '.$this->provider);
+            }
+
+            return DB::transaction(function () use ($oauthUser) {
+                return $this->processOAuthUser($oauthUser);
+            });
+
+        } catch (\Exception $e) {
+            \Log::error("OAuth {$this->provider} callback failed", [
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    protected function processOAuthUser(SocialiteUser $oauthUser): array
+    {
+        $connection = OauthConnection::where('provider', $this->provider)
+            ->where('provider_id', $oauthUser->getId())
+            ->first();
+
+        if ($connection) {
+            $connection->update([
+                'provider_token' => $oauthUser->token,
+                'provider_refresh_token' => $oauthUser->refreshToken,
+                'avatar' => $oauthUser->getAvatar(),
+            ]);
+
+            $member = $connection->member;
+        } else {
+            $member = Member::where('email', $oauthUser->getEmail())->first();
+
+            if (! $member) {
+                $nameParts = Helper::parseFullName($oauthUser->getName());
+
+                $member = $this->createMember->fromOAuth([
+                    'first_name' => $nameParts['first_name'],
+                    'last_name' => $nameParts['last_name'],
+                    'email' => $oauthUser->getEmail(),
+                ]);
+            }
+
+            $member->oauthConnections()->create([
+                'provider' => $this->provider,
+                'provider_id' => $oauthUser->getId(),
+                'provider_token' => $oauthUser->token,
+                'provider_refresh_token' => $oauthUser->refreshToken,
+                'avatar' => $oauthUser->getAvatar(),
+            ]);
+        }
+
+        $token = $member->createToken("{$this->provider}-auth")->plainTextToken;
+
+        return [
+            'member' => (new MemberResource($member->load('membershipTier', 'oauthConnections'))),
+            'access_token' => $token,
+        ];
+    }
+}

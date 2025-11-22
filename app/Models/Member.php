@@ -5,16 +5,20 @@ namespace App\Models;
 use App\Enums\Members\IdType;
 use App\Enums\Members\PreferredCommunication;
 use App\Enums\Members\Status;
-use Database\Factories\MemberFactory;
+use App\Observers\MemberObserver;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-class Member extends Model
+#[ObservedBy([MemberObserver::class])]
+class Member extends Authenticatable implements MustVerifyEmail
 {
-    /** @use HasFactory<MemberFactory> */
-    use HasFactory;
+    use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
         'member_number',
@@ -46,7 +50,7 @@ class Member extends Model
     ];
 
     protected $hidden = [
-        'password_hash',
+        'password',
         'email_verification_token',
         'password_reset_token',
     ];
@@ -109,5 +113,30 @@ class Member extends Model
     public function referralsReceived(): HasMany
     {
         return $this->hasMany(Referral::class, 'referred_member_id');
+    }
+
+    public function oauthConnections(): HasMany
+    {
+        return $this->hasMany(OauthConnection::class);
+    }
+
+    public function getAvailablePointsAttribute()
+    {
+        return $this->pointsLedgers()
+            ->where('expired', false)
+            ->where(function ($query) {
+                $query->whereNull('expiry_date')
+                    ->orWhere('expiry_date', '>', now());
+            })
+            ->sum('points_change');
+    }
+
+    public function getExpiringPointsAttribute()
+    {
+        return $this->pointsLedgers()
+            ->where('expired', false)
+            ->where('points_change', '>', 0)
+            ->whereBetween('expiry_date', [now(), now()->addDays(30)])
+            ->sum('points_change');
     }
 }
