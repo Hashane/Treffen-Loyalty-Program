@@ -15,10 +15,10 @@ Route::get('/auth/facebook/redirect', [AuthController::class, 'redirectToFaceboo
 Route::get('/auth/facebook/callback', [AuthController::class, 'handleFacebookCallback'])->name('facebook.callback');
 
 Route::post('auth/register', [AuthController::class, 'register']);
-Route::post('auth/login', [AuthController::class, 'login']);
+Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:login');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::get('/oauth/connections', [AuthController::class, 'oauthConnections']);
-    Route::delete('/oauth/connections/{OauthConnection}', [AuthController::class, 'unlinkOAuthProvider']);
+    Route::delete('/oauth/connections/{oauth_connection}', [AuthController::class, 'unlinkOAuthProvider']);
 });

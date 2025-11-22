@@ -68,23 +68,24 @@ class AuthController extends Controller
         ]);
     }
 
-    public function unlinkOAuthProvider(Request $request, OauthConnection $connection)
+    public function unlinkOAuthProvider(Request $request, OauthConnection $oauthConnection)
     {
-        if (! $connection) {
+        // Ensure the connection belongs to the authenticated user
+        if ($oauthConnection->member_id !== $request->user()->id) {
             return response()->error('OAuth connection not found', 404);
         }
 
         // Ensure member has either a password or another OAuth connection
         $hasPassword = ! empty($request->user()->password);
         $otherConnectionsCount = $request->user()->oauthConnections()
-            ->where('id', '!=', $connection->id)
+            ->where('id', '!=', $oauthConnection->id)
             ->count();
 
         if (! $hasPassword && $otherConnectionsCount === 0) {
             return response()->error('Cannot unlink last authentication method. Please set a password first.', 422);
         }
 
-        $connection->delete();
+        $oauthConnection->delete();
 
         return response()->success(null, 'OAuth connection unlinked successfully');
     }
