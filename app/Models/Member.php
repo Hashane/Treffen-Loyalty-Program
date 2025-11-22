@@ -31,13 +31,10 @@ class Member extends Authenticatable implements MustVerifyEmail
         'phone',
         'preferred_communication',
         'password',
-        'email_verified',
         'email_verified_at',
-        'email_verification_token',
+        'remember_token',
         'failed_login_attempts',
         'locked_until',
-        'password_reset_token',
-        'password_reset_expires',
         'qr_code_path',
         'qr_code_data',
         'membership_tier_id',
@@ -51,8 +48,7 @@ class Member extends Authenticatable implements MustVerifyEmail
 
     protected $hidden = [
         'password',
-        'email_verification_token',
-        'password_reset_token',
+        'remember_token',
     ];
 
     protected function casts(): array
@@ -62,10 +58,8 @@ class Member extends Authenticatable implements MustVerifyEmail
             'preferred_communication' => PreferredCommunication::class,
             'status' => Status::class,
             'date_of_birth' => 'date',
-            'email_verified' => 'boolean',
             'email_verified_at' => 'datetime',
             'locked_until' => 'datetime',
-            'password_reset_expires' => 'datetime',
             'enrolled_date' => 'datetime',
         ];
     }
@@ -118,6 +112,11 @@ class Member extends Authenticatable implements MustVerifyEmail
     public function oauthConnections(): HasMany
     {
         return $this->hasMany(OauthConnection::class);
+    }
+
+    public function verificationCodes(): HasMany
+    {
+        return $this->hasMany(VerificationCode::class);
     }
 
     public function getAvailablePointsAttribute()

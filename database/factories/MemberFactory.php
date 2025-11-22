@@ -34,7 +34,6 @@ class MemberFactory extends Factory
             'phone' => '+974'.fake()->numerify('########'),
             'preferred_communication' => fake()->randomElement(PreferredCommunication::cases()),
             'password' => static::$password ??= Hash::make('password'),
-            'email_verified' => fake()->boolean(80),
             'email_verified_at' => fake()->boolean(80) ? now() : null,
             'failed_login_attempts' => 0,
             'qr_code_data' => fake()->uuid(),

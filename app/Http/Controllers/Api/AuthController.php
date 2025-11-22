@@ -3,21 +3,33 @@
 namespace App\Http\Controllers\Api;
 
 use App\Actions\CreateMemberAction;
+use App\Enums\VerificationCodeType;
 use App\Events\MemberRegistered;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\ResetPasswordRequest;
 use App\Http\Resources\Api\V1\MemberResource;
+use App\Mail\PasswordResetOtpMail;
+use App\Models\Member;
 use App\Models\OauthConnection;
+use App\Models\VerificationCode;
 use App\Services\FacebookOAuthService;
 use App\Services\GoogleOAuthService;
+use App\VerifiesCode;
 use Hash;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+use Mail;
 
 class AuthController extends Controller
 {
+    use VerifiesCode;
+
     public function __construct(protected CreateMemberAction $createMember) {}
 
     public function register(RegisterRequest $request)
@@ -117,5 +129,58 @@ class AuthController extends Controller
         $result = $service->handleCallback();
 
         return response()->success($result);
+    }
+
+    public function forgotPassword(ForgotPasswordRequest $request)
+    {
+        $member = Member::where('email', $request->email)->first();
+
+        if (! $member) {
+            return response()->error('We could not find an account with that email address.', 404);
+        }
+
+        // Delete any existing password reset codes for this member
+        VerificationCode::where('identifier', $request->email)
+            ->where('type', VerificationCodeType::PasswordReset)
+            ->delete();
+
+        $otpCode = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        VerificationCode::create([
+            'member_id' => $member->id,
+            'identifier' => $request->email,
+            'type' => VerificationCodeType::PasswordReset,
+            'code' => Hash::make($otpCode),
+            'expires_at' => now()->addMinutes(10),
+            'attempts' => 0,
+        ]);
+
+        Mail::to($member->email)->send(new PasswordResetOtpMail($member, $otpCode));
+
+        return response()->success(null, 'Password reset code sent successfully.');
+    }
+
+    public function resetPassword(ResetPasswordRequest $request)
+    {
+        $verificationCode = $this->findAndVerifyCode($request->email, $request->code, VerificationCodeType::PasswordReset);
+
+        $member = Member::where('email', $request->email)->first();
+
+        if (! $member) {
+            return response()->error('Member not found.', 404);
+        }
+
+        $member->forceFill([
+            'password' => Hash::make($request->password),
+        ])->setRememberToken(Str::random(60));
+
+        $member->save();
+
+        // Delete the used verification code
+        $verificationCode->delete();
+
+        event(new PasswordReset($member));
+
+        return response()->success(null, 'Password has been reset successfully.');
     }
 }

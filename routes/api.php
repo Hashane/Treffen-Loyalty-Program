@@ -18,11 +18,17 @@ Route::get('/auth/facebook/callback', [AuthController::class, 'handleFacebookCal
 Route::post('auth/register', [AuthController::class, 'register']);
 Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:login')->name('login');
 
-Route::get('/email/verify/{id}/{hash}', [MemberController::class, 'verifyEmail'])->middleware(['signed'])
-    ->name('verification.verify');
+Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('guest')->name('password.email');
+Route::post('auth/reset-password', [AuthController::class, 'resetPassword'])->middleware('guest')->middleware('guest')->name('password.reset');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
+    Route::patch('/profile', [MemberController::class, 'updateProfile']);
     Route::get('/oauth/connections', [AuthController::class, 'oauthConnections']);
     Route::delete('/oauth/connections/{oauth_connection}', [AuthController::class, 'unlinkOAuthProvider']);
+
+    Route::post('/email/send-verification-code', [MemberController::class, 'sendVerificationCode'])
+        ->middleware('throttle:5,1');
+    Route::post('/email/verify', [MemberController::class, 'verifyEmail'])
+        ->middleware('throttle:5,1');
 });
