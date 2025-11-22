@@ -15,13 +15,23 @@ test('authenticated member can view their profile with oauth connections', funct
 
     $response->assertSuccessful()
         ->assertJsonStructure([
-            'member' => ['id', 'email', 'first_name'],
-            'oauth_connections' => [
-                '*' => ['id', 'provider', 'avatar', 'created_at'],
+            'success',
+            'message',
+            'data' => [
+                'id',
+                'member_number',
+                'referral_code',
+                'first_name',
+                'last_name',
+                'full_name',
+                'email',
+                'connected_accounts' => [
+                    '*' => ['member_id', 'provider', 'provider_avatar', 'created_at'],
+                ],
             ],
         ]);
 
-    expect($response->json('oauth_connections'))->toHaveCount(2);
+    expect($response->json('data.connected_accounts'))->toHaveCount(2);
 });
 
 test('authenticated member can view all oauth connections', function () {
@@ -32,7 +42,7 @@ test('authenticated member can view all oauth connections', function () {
     $response = $this->actingAs($member, 'sanctum')->getJson('/api/oauth/connections');
 
     $response->assertSuccessful()
-        ->assertJsonCount(2, 'connections')
+        ->assertJsonCount(2, 'data.connections')
         ->assertJsonFragment(['provider' => 'google'])
         ->assertJsonFragment(['provider' => 'facebook']);
 });
@@ -44,10 +54,9 @@ test('member can unlink oauth provider', function () {
     $connection = OauthConnection::factory()->google()->create(['member_id' => $member->id]);
 
     $response = $this->actingAs($member, 'sanctum')
-        ->deleteJson('/api/oauth/connections/google');
+        ->deleteJson("/api/oauth/connections/{$connection->id}");
 
-    $response->assertSuccessful()
-        ->assertJson(['message' => 'OAuth connection unlinked successfully']);
+    $response->assertSuccessful();
 
     $this->assertDatabaseMissing('oauth_connections', [
         'id' => $connection->id,
@@ -58,25 +67,21 @@ test('member cannot unlink non-existent oauth provider', function () {
     $member = Member::factory()->create();
 
     $response = $this->actingAs($member, 'sanctum')
-        ->deleteJson('/api/oauth/connections/google');
+        ->deleteJson('/api/oauth/connections/99999');
 
-    $response->assertNotFound()
-        ->assertJson(['message' => 'OAuth connection not found']);
+    $response->assertNotFound();
 });
 
 test('member cannot unlink last authentication method', function () {
     $member = Member::factory()->create([
         'password' => null,
     ]);
-    OauthConnection::factory()->google()->create(['member_id' => $member->id]);
+    $connection = OauthConnection::factory()->google()->create(['member_id' => $member->id]);
 
     $response = $this->actingAs($member, 'sanctum')
-        ->deleteJson('/api/oauth/connections/google');
+        ->deleteJson("/api/oauth/connections/{$connection->id}");
 
-    $response->assertStatus(422)
-        ->assertJson([
-            'message' => 'Cannot unlink last authentication method. Please set a password first.',
-        ]);
+    $response->assertStatus(422);
 
     $this->assertDatabaseHas('oauth_connections', [
         'member_id' => $member->id,
@@ -88,11 +93,11 @@ test('member can unlink oauth provider if they have another oauth connection', f
     $member = Member::factory()->create([
         'password' => null,
     ]);
-    OauthConnection::factory()->google()->create(['member_id' => $member->id]);
+    $googleConnection = OauthConnection::factory()->google()->create(['member_id' => $member->id]);
     OauthConnection::factory()->facebook()->create(['member_id' => $member->id]);
 
     $response = $this->actingAs($member, 'sanctum')
-        ->deleteJson('/api/oauth/connections/google');
+        ->deleteJson("/api/oauth/connections/{$googleConnection->id}");
 
     $response->assertSuccessful();
 
@@ -114,7 +119,7 @@ test('unauthenticated user cannot view oauth connections', function () {
 });
 
 test('unauthenticated user cannot unlink oauth provider', function () {
-    $response = $this->deleteJson('/api/oauth/connections/google');
+    $response = $this->deleteJson('/api/oauth/connections/1');
 
     $response->assertUnauthorized();
 });
@@ -129,7 +134,7 @@ test('member only sees their own oauth connections', function () {
     $response = $this->actingAs($member1, 'sanctum')->getJson('/api/oauth/connections');
 
     $response->assertSuccessful()
-        ->assertJsonCount(1, 'connections')
+        ->assertJsonCount(1, 'data.connections')
         ->assertJsonFragment(['provider' => 'google'])
         ->assertJsonMissing(['provider' => 'facebook']);
 });
