@@ -17,7 +17,7 @@ use App\Models\OauthConnection;
 use App\Models\VerificationCode;
 use App\Services\FacebookOAuthService;
 use App\Services\GoogleOAuthService;
-use App\VerifiesCode;
+use App\Traits\VerifiesCode;
 use Hash;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;

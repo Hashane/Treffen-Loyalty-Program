@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Traits;
 
 use App\Enums\VerificationCodeType;
 use App\Models\VerificationCode;

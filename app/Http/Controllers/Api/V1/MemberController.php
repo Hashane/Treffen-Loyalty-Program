@@ -10,7 +10,7 @@ use App\Http\Resources\Api\V1\MemberResource;
 use App\Mail\EmailVerificationMail;
 use App\Models\Member;
 use App\Models\VerificationCode;
-use App\VerifiesCode;
+use App\Traits\VerifiesCode;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
