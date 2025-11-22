@@ -119,4 +119,24 @@ class Member extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(OauthConnection::class);
     }
+
+    public function getAvailablePointsAttribute()
+    {
+        return $this->pointsLedgers()
+            ->where('expired', false)
+            ->where(function ($query) {
+                $query->whereNull('expiry_date')
+                    ->orWhere('expiry_date', '>', now());
+            })
+            ->sum('points_change');
+    }
+
+    public function getExpiringPointsAttribute()
+    {
+        return $this->pointsLedgers()
+            ->where('expired', false)
+            ->where('points_change', '>', 0)
+            ->whereBetween('expiry_date', [now(), now()->addDays(30)])
+            ->sum('points_change');
+    }
 }
