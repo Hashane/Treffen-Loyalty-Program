@@ -23,6 +23,7 @@ Route::post('auth/reset-password', [AuthController::class, 'resetPassword'])->mi
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
+    Route::patch('/profile', [MemberController::class, 'updateProfile']);
     Route::get('/oauth/connections', [AuthController::class, 'oauthConnections']);
     Route::delete('/oauth/connections/{oauth_connection}', [AuthController::class, 'unlinkOAuthProvider']);
 

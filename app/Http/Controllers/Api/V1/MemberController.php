@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\VerificationCodeType;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateProfileRequest;
 use App\Http\Requests\VerifyEmailRequest;
+use App\Http\Resources\Api\V1\MemberResource;
 use App\Mail\EmailVerificationMail;
 use App\Models\Member;
 use App\Models\VerificationCode;
@@ -48,6 +50,21 @@ class MemberController extends Controller
     public function destroy(Member $member)
     {
         //
+    }
+
+    /**
+     * Update the authenticated member's profile.
+     */
+    public function updateProfile(UpdateProfileRequest $request)
+    {
+        $member = $request->user();
+
+        $member->update($request->validated());
+
+        return response()->success(
+            new MemberResource($member->load('membershipTier', 'oauthConnections')),
+            'Profile updated successfully'
+        );
     }
 
     public function sendVerificationCode(Request $request)
