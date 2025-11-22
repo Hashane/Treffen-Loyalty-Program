@@ -15,12 +15,7 @@ abstract class OAuthProvider
 {
     protected string $provider;
 
-    public function __construct(
-        string $provider,
-        protected CreateMemberAction $createMember
-    ) {
-        $this->provider = $provider;
-    }
+    public function __construct(protected CreateMemberAction $createMember) {}
 
     public function getRedirectUrl(): string
     {

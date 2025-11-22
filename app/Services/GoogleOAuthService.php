@@ -6,8 +6,5 @@ use App\Abstracts\OAuthProvider;
 
 class GoogleOAuthService extends OAuthProvider
 {
-    public function __construct()
-    {
-        parent::__construct('google');
-    }
+    protected string $provider = 'google';
 }

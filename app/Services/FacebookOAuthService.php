@@ -6,8 +6,5 @@ use App\Abstracts\OAuthProvider;
 
 class FacebookOAuthService extends OAuthProvider
 {
-    public function __construct()
-    {
-        parent::__construct('facebook');
-    }
+    protected string $provider = 'facebook';
 }
