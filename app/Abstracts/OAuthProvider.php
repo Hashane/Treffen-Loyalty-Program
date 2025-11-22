@@ -3,6 +3,8 @@
 namespace App\Abstracts;
 
 use App\Actions\CreateMemberAction;
+use App\Helpers\Helper;
+use App\Http\Resources\Api\V1\MemberResource;
 use App\Models\Member;
 use App\Models\OauthConnection;
 use Illuminate\Support\Facades\DB;
@@ -69,7 +71,7 @@ abstract class OAuthProvider
             $member = Member::where('email', $oauthUser->getEmail())->first();
 
             if (! $member) {
-                $nameParts = $this->parseFullName($oauthUser->getName());
+                $nameParts = Helper::parseFullName($oauthUser->getName());
 
                 $member = $this->createMember->fromOAuth([
                     'first_name' => $nameParts['first_name'],
@@ -90,28 +92,8 @@ abstract class OAuthProvider
         $token = $member->createToken("{$this->provider}-auth")->plainTextToken;
 
         return [
-            'member' => $member->load('membershipTier'),
-            'token' => $token,
-        ];
-    }
-
-    protected function parseFullName(string $fullName): array
-    {
-        $parts = array_filter(explode(' ', trim($fullName)));
-
-        if (count($parts) === 1) {
-            return [
-                'first_name' => $parts[0],
-                'last_name' => $parts[0],
-            ];
-        }
-
-        $lastName = array_pop($parts);
-        $firstName = implode(' ', $parts);
-
-        return [
-            'first_name' => $firstName,
-            'last_name' => $lastName,
+            'member' => (new MemberResource($member->load('membershipTier', 'oauthConnections'))),
+            'access_token' => $token,
         ];
     }
 }

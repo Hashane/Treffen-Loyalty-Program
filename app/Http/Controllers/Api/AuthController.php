@@ -6,6 +6,7 @@ use App\Actions\CreateMemberAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Resources\Api\V1\MemberResource;
 use App\Services\FacebookOAuthService;
 use App\Services\GoogleOAuthService;
 use Hash;
@@ -29,8 +30,8 @@ class AuthController extends Controller
         $token = $member->createToken('auth-token')->plainTextToken;
 
         return response()->json([
-            'member' => $member,
-            'token' => $token,
+            'member' => new MemberResource($member),
+            'access_token' => $token,
         ], 201);
     }
 
@@ -45,15 +46,16 @@ class AuthController extends Controller
         $member = Auth::guard('member')->user();
         $token = $member->createToken('auth-token')->plainTextToken;
 
-        return response()->json(['access_token' => $token, 'token_type' => 'Bearer']);
+        return response()->json([
+            'member' => new MemberResource($member),
+            'access_token' => $token,
+        ]);
     }
 
     public function me(Request $request)
     {
-        return response()->json([
-            'member' => $request->user(),
-            'oauth_connections' => $request->user()->oauthConnections()->get(['id', 'provider', 'avatar', 'created_at']),
-        ]);
+        return response()->json(new MemberResource($request->user()->load('membershipTier', 'oauthConnections')));
+
     }
 
     public function oauthConnections(Request $request)
