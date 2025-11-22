@@ -5,7 +5,9 @@ namespace App\Models;
 use App\Enums\Members\IdType;
 use App\Enums\Members\PreferredCommunication;
 use App\Enums\Members\Status;
+use App\Observers\MemberObserver;
 use Illuminate\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,9 +15,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+#[ObservedBy([MemberObserver::class])]
 class Member extends Authenticatable
 {
-    use HasFactory, HasApiTokens, Notifiable, MustVerifyEmail;
+    use HasApiTokens, HasFactory, MustVerifyEmail, Notifiable;
 
     protected $fillable = [
         'member_number',
@@ -110,5 +113,10 @@ class Member extends Authenticatable
     public function referralsReceived(): HasMany
     {
         return $this->hasMany(Referral::class, 'referred_member_id');
+    }
+
+    public function oauthConnections(): HasMany
+    {
+        return $this->hasMany(OauthConnection::class);
     }
 }
