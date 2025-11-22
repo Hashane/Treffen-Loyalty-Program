@@ -5,16 +5,17 @@ namespace App\Models;
 use App\Enums\Members\IdType;
 use App\Enums\Members\PreferredCommunication;
 use App\Enums\Members\Status;
-use Database\Factories\MemberFactory;
+use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-class Member extends Model
+class Member extends Authenticatable
 {
-    /** @use HasFactory<MemberFactory> */
-    use HasFactory;
+    use HasFactory, HasApiTokens, Notifiable, MustVerifyEmail;
 
     protected $fillable = [
         'member_number',
@@ -46,7 +47,7 @@ class Member extends Model
     ];
 
     protected $hidden = [
-        'password_hash',
+        'password',
         'email_verification_token',
         'password_reset_token',
     ];
