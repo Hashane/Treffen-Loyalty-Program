@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\Api\V1\MemberResource;
+use App\Models\OauthConnection;
 use App\Services\FacebookOAuthService;
 use App\Services\GoogleOAuthService;
 use Hash;
@@ -40,7 +41,7 @@ class AuthController extends Controller
         $request->validated($request->all());
 
         if (! Auth::guard('member')->attempt($request->only('email', 'password'))) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+            return response()->success(null, 'Invalid credentials', 401);
         }
 
         $member = Auth::guard('member')->user();
@@ -67,16 +68,10 @@ class AuthController extends Controller
         ]);
     }
 
-    public function unlinkOAuthProvider(Request $request, string $provider)
+    public function unlinkOAuthProvider(Request $request, OauthConnection $connection)
     {
-        $connection = $request->user()->oauthConnections()
-            ->where('provider', $provider)
-            ->first();
-
         if (! $connection) {
-            return response()->json([
-                'message' => 'OAuth connection not found',
-            ], 404);
+            return response()->error('OAuth connection not found', 404);
         }
 
         // Ensure member has either a password or another OAuth connection
@@ -86,16 +81,12 @@ class AuthController extends Controller
             ->count();
 
         if (! $hasPassword && $otherConnectionsCount === 0) {
-            return response()->json([
-                'message' => 'Cannot unlink last authentication method. Please set a password first.',
-            ], 422);
+            return response()->error('Cannot unlink last authentication method. Please set a password first.', 422);
         }
 
         $connection->delete();
 
-        return response()->json([
-            'message' => 'OAuth connection unlinked successfully',
-        ]);
+        return response()->success(null, 'OAuth connection unlinked successfully');
     }
 
     public function redirectToGoogle(GoogleOAuthService $service)

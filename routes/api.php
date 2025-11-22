@@ -20,5 +20,5 @@ Route::post('auth/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::get('/oauth/connections', [AuthController::class, 'oauthConnections']);
-    Route::delete('/oauth/connections/{provider}', [AuthController::class, 'unlinkOAuthProvider']);
+    Route::delete('/oauth/connections/{OauthConnection}', [AuthController::class, 'unlinkOAuthProvider']);
 });
