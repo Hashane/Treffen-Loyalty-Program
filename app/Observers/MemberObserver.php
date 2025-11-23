@@ -11,18 +11,18 @@ class MemberObserver
 {
     public function creating(Member $member): void
     {
-        if (!$member->member_number) {
+        if (! $member->member_number) {
             $member->member_number = $this->generateUniqueMemberNumber();
         }
 
-        if (!$member->referral_code) {
+        if (! $member->referral_code) {
             $member->referral_code = $this->generateUniqueReferralCode();
         }
 
-        if (!$member->membership_tier_id) {
+        if (! $member->membership_tier_id) {
             $defaultTier = MembershipTier::orderBy('tier_level')->first();
 
-            if (!$defaultTier) {
+            if (! $defaultTier) {
                 throw new \RuntimeException('No membership tiers exist. Please seed tiers first.');
             }
 
@@ -39,11 +39,11 @@ class MemberObserver
         $maxAttempts = 10;
 
         do {
-            $memberNumber = 'MBR' . str_pad(random_int(1, 999999), 6, '0', STR_PAD_LEFT);
+            $memberNumber = 'MBR'.str_pad(random_int(1, 999999), 6, '0', STR_PAD_LEFT);
             $attempts++;
 
             if ($attempts >= $maxAttempts) {
-                throw new \RuntimeException('Failed to generate unique member number after ' . $maxAttempts . ' attempts');
+                throw new \RuntimeException('Failed to generate unique member number after '.$maxAttempts.' attempts');
             }
         } while (Member::where('member_number', $memberNumber)->exists());
 
@@ -59,11 +59,11 @@ class MemberObserver
         $maxAttempts = 10;
 
         do {
-            $referralCode = strtoupper(Str::random(3) . random_int(100, 999));
+            $referralCode = strtoupper(Str::random(3).random_int(100, 999));
             $attempts++;
 
             if ($attempts >= $maxAttempts) {
-                throw new \RuntimeException('Failed to generate unique referral code after ' . $maxAttempts . ' attempts');
+                throw new \RuntimeException('Failed to generate unique referral code after '.$maxAttempts.' attempts');
             }
         } while (Member::where('referral_code', $referralCode)->exists());
 
