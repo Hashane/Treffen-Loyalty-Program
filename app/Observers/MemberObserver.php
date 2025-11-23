@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Models\Member;
 use App\Models\MembershipTier;
 use Illuminate\Support\Str;
+use Random\RandomException;
 
 class MemberObserver
 {
@@ -29,13 +30,16 @@ class MemberObserver
         }
     }
 
+    /**
+     * @throws RandomException
+     */
     private function generateUniqueMemberNumber(): string
     {
         $attempts = 0;
         $maxAttempts = 10;
 
         do {
-            $memberNumber = 'MBR' . str_pad(rand(1, 999999), 6, '0', STR_PAD_LEFT);
+            $memberNumber = 'MBR' . str_pad(random_int(1, 999999), 6, '0', STR_PAD_LEFT);
             $attempts++;
 
             if ($attempts >= $maxAttempts) {
@@ -46,13 +50,16 @@ class MemberObserver
         return $memberNumber;
     }
 
+    /**
+     * @throws RandomException
+     */
     private function generateUniqueReferralCode(): string
     {
         $attempts = 0;
         $maxAttempts = 10;
 
         do {
-            $referralCode = strtoupper(Str::random(3) . rand(100, 999));
+            $referralCode = strtoupper(Str::random(3) . random_int(100, 999));
             $attempts++;
 
             if ($attempts >= $maxAttempts) {
