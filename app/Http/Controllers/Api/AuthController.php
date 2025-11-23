@@ -17,7 +17,7 @@ use App\Models\OauthConnection;
 use App\Models\VerificationCode;
 use App\Services\FacebookOAuthService;
 use App\Services\GoogleOAuthService;
-use App\VerifiesCode;
+use App\Traits\VerifiesCode;
 use Hash;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
@@ -182,5 +182,12 @@ class AuthController extends Controller
         event(new PasswordReset($member));
 
         return response()->success(null, 'Password has been reset successfully.');
+    }
+
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->success(null, 'Logged out successfully.');
     }
 }
