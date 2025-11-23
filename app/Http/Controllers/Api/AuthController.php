@@ -183,4 +183,11 @@ class AuthController extends Controller
 
         return response()->success(null, 'Password has been reset successfully.');
     }
+
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->success(null, 'Logged out successfully.');
+    }
 }

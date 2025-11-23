@@ -22,6 +22,7 @@ Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword'])->
 Route::post('auth/reset-password', [AuthController::class, 'resetPassword'])->middleware('guest')->middleware('guest')->name('password.reset');
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('auth/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
     Route::patch('/profile', [MemberController::class, 'updateProfile']);
     Route::get('/oauth/connections', [AuthController::class, 'oauthConnections']);
