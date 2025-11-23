@@ -17,14 +17,4 @@ class BaseModel extends Model
         'created_at' => 'datetime:Y-m-d H:i:s',
         'updated_at' => 'datetime:Y-m-d H:i:s',
     ];
-
-    public function getCreatedAtAttribute($value)
-    {
-        return $value->format('Y-m-d H:i:s');
-    }
-
-    public function getUpdatedAtAttribute($value)
-    {
-        return $value->format('Y-m-d H:i:s');
-    }
 }

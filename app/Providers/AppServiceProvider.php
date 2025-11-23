@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
@@ -36,7 +37,7 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by($request->ip());
         });
 
-        Response::macro('success', function ($data = null, $message = 'Success', int $code = 200) {
+        Response::macro('success', function (mixed $data = null, string $message = 'Success', int $code = 200): JsonResponse {
             return response()->json([
                 'success' => true,
                 'message' => $message,
@@ -44,10 +45,11 @@ class AppServiceProvider extends ServiceProvider
             ], $code);
         });
 
-        Response::macro('error', function ($message, $code = 400) {
+        Response::macro('error', function (string $message, int $code = 400, mixed $errors = null): JsonResponse {
             return response()->json([
                 'success' => false,
                 'message' => $message,
+                ...($errors ? ['errors' => $errors] : []),
             ], $code);
         });
     }
