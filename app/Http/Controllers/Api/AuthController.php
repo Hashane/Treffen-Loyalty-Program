@@ -45,7 +45,11 @@ class AuthController extends Controller
         event(new Registered($member));
         event(new MemberRegistered($member));
 
-        $token = $member->createToken('auth-token')->plainTextToken;
+        $token = $member->createToken(
+            'auth-token for '.$member->email,
+            ['*'],
+            now()->addDay()
+        )->plainTextToken;
 
         return response()->success([
             'member' => new MemberResource($member),
