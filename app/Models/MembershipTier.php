@@ -13,6 +13,7 @@ class MembershipTier extends Model
     protected $fillable = [
         'tier_name',
         'tier_level',
+        'tier_bonus',
         'points_threshold',
         'points_multiplier',
         'benefits',

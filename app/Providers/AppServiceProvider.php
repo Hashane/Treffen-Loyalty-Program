@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Interfaces\CalculatesLoyaltyPoints;
+use App\Loyalty\Calculators\BenefitsAwareCalculator;
+use App\Loyalty\Calculators\StandardPointCalculator;
+use App\Loyalty\Calculators\TierLevelBonusCalculator;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -52,5 +56,13 @@ class AppServiceProvider extends ServiceProvider
                 ...($errors ? ['errors' => $errors] : []),
             ], $code);
         });
+
+        $calculator = match ('test') {
+            'tier_bonus' => TierLevelBonusCalculator::class,
+            'benefits' => BenefitsAwareCalculator::class,
+            default => StandardPointCalculator::class,
+        };
+
+        app()->singleton(CalculatesLoyaltyPoints::class, $calculator);
     }
 }
