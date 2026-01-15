@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 
 #[ObservedBy([MemberObserver::class])]
@@ -128,6 +129,19 @@ class Member extends Authenticatable implements MustVerifyEmail
                     ->orWhere('expiry_date', '>', now());
             })
             ->sum('points_change');
+    }
+
+    public function getFullNameAttribute(): string
+    {
+        return "{$this->first_name} {$this->last_name}";
+    }
+
+    public function getInitialsAttribute(): string
+    {
+        return Str::of($this->full_name)
+            ->explode(' ')
+            ->map(fn($part) => Str::of($part)->substr(0, 1)->upper())
+            ->join('');
     }
 
     public function getExpiringPointsAttribute()
