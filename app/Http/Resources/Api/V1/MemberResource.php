@@ -21,16 +21,15 @@ class MemberResource extends JsonResource
 
             'first_name' => $this->first_name,
             'last_name' => $this->last_name,
-            'full_name' => $this->first_name.' '.$this->last_name,
+            'full_name' => $this->full_name,
+            'initials' => $this->initials,
             'email' => $this->email,
             'phone' => $this->phone,
             'date_of_birth' => $this->date_of_birth,
+            'avatar_url' => '',
 
             'id_type' => $this->id_type,
-            'qatar_id_or_passport' => $this->when(
-                $request->user()?->id === $this->id, // Only show to owner
-                $this->qatar_id_or_passport
-            ),
+            'qatar_id_or_passport' => $this->qatar_id_or_passport,
 
             'email_verified' => (bool) $this->email_verified_at,
             'account_status' => $this->status,
