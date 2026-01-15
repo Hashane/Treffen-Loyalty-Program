@@ -11,6 +11,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\ResetPasswordRequest;
 use App\Http\Resources\Api\V1\MemberResource;
+use App\Http\Resources\Api\V1\MemberHomeResource;
 use App\Mail\PasswordResetOtpMail;
 use App\Models\Member;
 use App\Models\OauthConnection;
@@ -23,6 +24,7 @@ use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Mail;
 
@@ -78,8 +80,10 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        return response()->success(new MemberResource($request->user()->load('membershipTier', 'oauthConnections')));
-
+        return response()->success(
+            new MemberHomeResource($request->user()->load('membershipTier')),
+            'Profile fetched successfully'
+        );
     }
 
     public function oauthConnections(Request $request)
