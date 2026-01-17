@@ -136,6 +136,34 @@ class Member extends Authenticatable implements MustVerifyEmail
         return "{$this->first_name} {$this->last_name}";
     }
 
+    public function getNextTierAttribute(): ?MembershipTier
+    {
+        if (!$this->membershipTier) {
+            return null;
+        }
+
+        // Cache within the request lifecycle to avoid duplicate queries
+        return once(function () {
+            return MembershipTier::where('tier_level', '>', $this->membershipTier->tier_level)
+                ->orderBy('tier_level')
+                ->first();
+        });
+    }
+
+    public function getNextTierPointsAttribute(): ?int
+    {
+        return $this->next_tier?->points_threshold;
+    }
+
+    public function getPointsToNextTierAttribute(): ?int
+    {
+        if (!$this->next_tier) {
+            return null;
+        }
+
+        return max(0, $this->next_tier->points_threshold - $this->lifetime_points);
+    }
+
     public function getInitialsAttribute(): string
     {
         return Str::of($this->full_name)
