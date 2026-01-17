@@ -16,7 +16,7 @@ Route::get('/auth/facebook/redirect', [AuthController::class, 'redirectToFaceboo
 Route::get('/auth/facebook/callback', [AuthController::class, 'handleFacebookCallback'])->name('facebook.callback');
 
 Route::post('auth/register', [AuthController::class, 'register']);
-Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:login')->name('login');
+Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:login');
 
 Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('guest')->name('password.email');
 Route::post('auth/reset-password', [AuthController::class, 'resetPassword'])->middleware('guest')->middleware('guest')->name('password.reset');
